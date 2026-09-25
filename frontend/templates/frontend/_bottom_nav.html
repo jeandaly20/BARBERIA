@@ -1,0 +1,20 @@
+<nav class="fixed bottom-0 inset-x-0 z-50 pb-safe bg-surface/90 backdrop-blur-xl shadow-[0_-4px_20px_rgba(0,0,0,0.5)]">
+  <div class="flex justify-around items-center h-20 px-space-xs">
+    <a href="{% url 'frontend:servicios' %}" class="flex flex-col items-center justify-center gap-1 w-16 h-12 transition-colors {% if active_tab == 'servicios' %}text-primary-container font-semibold{% else %}text-on-surface-variant hover:text-on-surface{% endif %}">
+      <span class="material-symbols-outlined text-[22px]">content_cut</span>
+      <span class="font-label-sm text-label-sm">Servicios</span>
+    </a>
+    <a href="{% url 'frontend:agenda' %}" class="flex flex-col items-center justify-center gap-1 w-16 h-12 transition-colors {% if active_tab == 'agenda' %}text-primary-container font-semibold{% else %}text-on-surface-variant hover:text-on-surface{% endif %}">
+      <span class="material-symbols-outlined text-[22px]">calendar_month</span>
+      <span class="font-label-sm text-label-sm">Agenda</span>
+    </a>
+    <a href="{% url 'frontend:mis_citas' %}" class="flex flex-col items-center justify-center gap-1 w-16 h-12 transition-colors {% if active_tab == 'citas' %}text-primary-container font-semibold{% else %}text-on-surface-variant hover:text-on-surface{% endif %}">
+      <span class="material-symbols-outlined text-[22px]">confirmation_number</span>
+      <span class="font-label-sm text-label-sm">Citas</span>
+    </a>
+    <a href="{% url 'frontend:perfil' %}" class="flex flex-col items-center justify-center gap-1 w-16 h-12 transition-colors {% if active_tab == 'perfil' %}text-primary-container font-semibold{% else %}text-on-surface-variant hover:text-on-surface{% endif %}">
+      <span class="material-symbols-outlined text-[22px]">person</span>
+      <span class="font-label-sm text-label-sm">Perfil</span>
+    </a>
+  </div>
+</nav>

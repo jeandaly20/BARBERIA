@@ -1,0 +1,183 @@
+{% extends "frontend/base.html" %}
+{% load static %}
+{% block title %}Confirmar reserva — Jean Barber Atelier{% endblock %}
+
+{% block header %}
+<header class="fixed top-0 inset-x-0 z-50 bg-surface/85 backdrop-blur-xl pt-safe shadow-[0_1px_8px_rgba(0,0,0,0.3)]">
+  <div class="h-16 px-margin flex items-center justify-between">
+    <div class="flex items-center gap-space-sm">
+      <button aria-label="Volver" class="w-11 h-11 -ml-2 rounded-lg flex items-center justify-center text-on-surface hover:text-primary transition-colors" onclick="history.back()">
+        <span class="material-symbols-outlined text-[24px]">arrow_back</span>
+      </button>
+      <div class="flex flex-col">
+        <span class="font-headline-sm text-headline-sm text-primary tracking-tight leading-none">Jean Barber Atelier</span>
+        <h1 class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Confirmar Reserva</h1>
+      </div>
+    </div>
+  </div>
+</header>
+{% endblock %}
+
+{% block main_extra_classes %} pt-16 pb-safe{% endblock %}
+
+{% block content %}
+<div class="flex flex-col w-full px-margin pb-space-xl space-y-space-md">
+  <div class="flex items-center justify-between pt-space-sm pb-space-xs">
+    <div>
+      <p class="font-label-sm text-label-sm text-primary uppercase tracking-wider">Jean Barber Atelier</p>
+      <h2 class="font-headline-sm text-headline-sm text-on-surface tracking-tight">Paso 3: Confirmación y Pago</h2>
+    </div>
+    <div class="px-space-sm py-1 rounded-full bg-surface-container-high flex items-center gap-1 shadow-sm">
+      <span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+      <span class="font-label-sm text-label-sm text-on-surface-variant font-semibold">3 / 3</span>
+    </div>
+  </div>
+
+  <div class="hidden mb-space-sm px-4 py-3 rounded-lg bg-error-container text-on-error-container font-body-sm text-body-sm" id="pagoError"></div>
+
+  <!-- Resumen -->
+  <div class="rounded-xl bg-surface-container p-space-md shadow-md space-y-space-md relative overflow-hidden">
+    <div class="grid grid-cols-2 gap-space-sm bg-surface-container-low rounded-lg p-space-sm">
+      <div class="flex items-center space-x-2">
+        <div class="w-8 h-8 rounded-lg bg-surface-container-high flex items-center justify-center text-primary">
+          <span class="material-symbols-outlined text-[18px]">calendar_today</span>
+        </div>
+        <div>
+          <p class="font-label-sm text-label-sm text-on-surface-variant">Fecha y Hora</p>
+          <p class="font-label-lg text-label-lg text-on-surface font-semibold" id="resumen-fecha-hora">—</p>
+        </div>
+      </div>
+      <div class="flex items-center space-x-2">
+        <div class="w-8 h-8 rounded-lg bg-surface-container-high flex items-center justify-center text-primary">
+          <span class="material-symbols-outlined text-[18px]">schedule</span>
+        </div>
+        <div>
+          <p class="font-label-sm text-label-sm text-on-surface-variant">Duración</p>
+          <p class="font-label-lg text-label-lg text-on-surface font-semibold" id="resumen-duracion">—</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="space-y-space-xs pt-space-xs text-on-surface-variant text-body-md font-body-md" id="resumen-items"></div>
+  </div>
+
+  <!-- Modalidad de pago -->
+  <div class="pt-space-xs">
+    <div class="flex items-center justify-between mb-space-xs">
+      <h3 class="font-headline-sm text-headline-sm text-on-surface">Modalidad de Pago</h3>
+      <span class="font-label-sm text-label-sm text-primary font-medium">Requisito de Reserva</span>
+    </div>
+    <p class="font-body-sm text-body-sm text-on-surface-variant">Elige si prefieres liquidar un anticipo o cubrir la experiencia completa.</p>
+  </div>
+
+  <div class="space-y-space-sm" id="paymentOptionsGroup">
+    <div class="cursor-pointer rounded-xl bg-surface-container-high p-space-md shadow-md transition-all duration-200" id="card-deposit">
+      <div class="flex items-start justify-between">
+        <div class="flex items-start space-x-space-sm flex-1">
+          <div class="mt-1 w-5 h-5 rounded-full bg-primary flex items-center justify-center shrink-0" id="radio-deposit">
+            <div class="w-2 h-2 rounded-full bg-on-primary"></div>
+          </div>
+          <div class="space-y-1 pr-2">
+            <div class="flex items-center gap-2">
+              <span class="font-label-lg text-label-lg text-on-surface font-bold">Pagar 50% de anticipo</span>
+              <span class="px-2 py-0.5 rounded-full bg-primary text-on-primary font-label-sm text-label-sm tracking-wide uppercase font-bold text-[10px]">Recomendado</span>
+            </div>
+            <p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
+              Asegura tu cita ahora. El saldo restante (<span class="text-on-surface font-medium" id="texto-saldo">$0.00</span>) lo pagas en efectivo o transferencia directamente a Jean al terminar tu corte.
+            </p>
+          </div>
+        </div>
+        <div class="text-right shrink-0">
+          <span class="font-price-xl text-headline-md text-primary font-bold" id="precio-deposito">$0.00</span>
+          <span class="block font-label-sm text-label-sm text-on-surface-variant">Hoy</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="cursor-pointer rounded-xl bg-surface-container p-space-md shadow-md transition-all duration-200" id="card-full">
+      <div class="flex items-start justify-between">
+        <div class="flex items-start space-x-space-sm flex-1">
+          <div class="mt-1 w-5 h-5 rounded-full bg-surface-container-highest flex items-center justify-center shrink-0" id="radio-full">
+            <div class="w-2 h-2 rounded-full bg-transparent"></div>
+          </div>
+          <div class="space-y-1 pr-2">
+            <span class="font-label-lg text-label-lg text-on-surface font-semibold">Pagar servicio completo 100%</span>
+            <p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
+              Despreocúpate de pagar en el local, llega y disfruta de tu corte.
+            </p>
+          </div>
+        </div>
+        <div class="text-right shrink-0">
+          <span class="font-price-xl text-headline-md text-on-surface font-bold" id="precio-completo">$0.00</span>
+          <span class="block font-label-sm text-label-sm text-on-surface-variant">Hoy</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PayPal -->
+  <div class="rounded-xl bg-surface-container p-space-md shadow-lg space-y-space-md">
+    <div class="flex items-center justify-between pb-space-xs">
+      <div class="flex items-center space-x-2">
+        <div class="px-2.5 py-1 rounded bg-[#003087] text-white font-headline-sm text-headline-sm font-bold tracking-tight italic flex items-center gap-1 shadow-sm">
+          <span>Pay</span><span class="text-[#0079C1]">Pal</span>
+        </div>
+        <span class="font-label-sm text-label-sm text-on-surface-variant">Pasarela Oficial</span>
+      </div>
+      <div class="flex items-center gap-1 text-[#0079C1]">
+        <span class="material-symbols-outlined text-[16px]">verified_user</span>
+        <span class="font-label-sm text-label-sm text-on-surface-variant font-medium">Checkout Seguro</span>
+      </div>
+    </div>
+
+    <div class="flex items-center justify-between px-space-md py-space-sm rounded-lg bg-surface-container-low">
+      <span class="font-body-md text-body-md text-on-surface">Monto a autorizar:</span>
+      <span class="font-price-xl text-price-xl text-primary font-bold" id="displayAmount">$0.00 USD</span>
+    </div>
+
+    <div class="space-y-2.5">
+      <button class="w-full h-12 rounded-lg bg-[#FFC439] hover:bg-[#F2BA36] active:scale-[0.99] transition-all flex items-center justify-center gap-2 shadow-md" id="btn-paypal">
+        <span class="font-headline-sm text-headline-sm italic font-extrabold text-[#003087]">Pay<span class="text-[#0079C1]">Pal</span></span>
+        <span class="font-label-lg text-label-lg text-[#003087] font-bold" id="btn-paypal-label">Pagar ahora</span>
+      </button>
+    </div>
+
+    <div class="flex items-center justify-center gap-1.5 pt-1 text-center">
+      <span class="material-symbols-outlined text-[16px] text-primary">lock</span>
+      <p class="font-body-sm text-body-sm text-on-surface-variant text-[11px] leading-tight">
+        Transacción encriptada y protegida por <span class="text-on-surface font-medium">PayPal Buyer Protection</span>.
+      </p>
+    </div>
+  </div>
+
+  <!-- Políticas -->
+  <div class="rounded-xl bg-surface-container-low p-space-md space-y-space-sm">
+    <div class="flex items-center gap-2">
+      <span class="material-symbols-outlined text-[18px] text-primary">info</span>
+      <h4 class="font-label-lg text-label-lg text-on-surface font-semibold">Políticas del Atelier y Anticipo</h4>
+    </div>
+    <div class="space-y-2">
+      <div class="flex items-start space-x-2.5">
+        <div class="w-6 h-6 rounded-full bg-surface-container flex items-center justify-center shrink-0 mt-0.5 text-primary">
+          <span class="material-symbols-outlined text-[14px]">notifications_active</span>
+        </div>
+        <p class="font-body-sm text-body-sm text-on-surface-variant">
+          <strong class="text-on-surface font-medium">Recordatorio automático por email:</strong> te enviaremos la confirmación y un aviso 10 min antes de tu turno.
+        </p>
+      </div>
+      <div class="flex items-start space-x-2.5">
+        <div class="w-6 h-6 rounded-full bg-surface-container flex items-center justify-center shrink-0 mt-0.5 text-primary">
+          <span class="material-symbols-outlined text-[14px]">timer</span>
+        </div>
+        <p class="font-body-sm text-body-sm text-on-surface-variant">
+          <strong class="text-on-surface font-medium">Tolerancia máxima:</strong> 15 min. Por respeto a los clientes subsiguientes, el turno expira pasado este lapso.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{% static 'frontend/js/pago.js' %}"></script>
+{% endblock %}

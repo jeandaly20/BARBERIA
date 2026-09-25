@@ -1,0 +1,30 @@
+{% extends "frontend/base.html" %}
+{% load static %}
+{% block title %}Mis citas — Jean Barber Atelier{% endblock %}
+
+{% block header %}
+<header class="fixed top-0 inset-x-0 z-50 bg-surface/85 backdrop-blur-xl pt-safe shadow-[0_1px_8px_rgba(0,0,0,0.3)]">
+  <div class="h-16 px-margin flex items-center justify-between">
+    <div class="flex items-center gap-space-sm">
+      <img alt="Jean Barber Atelier" class="h-8 w-auto object-contain" src="{% static 'frontend/img/logo.svg' %}"/>
+      <span class="font-headline-sm text-headline-sm text-primary tracking-tight leading-none">Mis Citas</span>
+    </div>
+  </div>
+</header>
+{% endblock %}
+
+{% block main_extra_classes %} pt-16 pb-24{% endblock %}
+
+{% block content %}
+<div class="flex flex-col w-full px-margin py-space-md space-y-space-sm" id="citas-list">
+  <p class="font-body-sm text-body-sm text-on-surface-variant">Cargando tus citas…</p>
+</div>
+{% endblock %}
+
+{% block bottom_nav %}
+{% include "frontend/_bottom_nav.html" with active_tab="citas" %}
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{% static 'frontend/js/mis_citas.js' %}"></script>
+{% endblock %}

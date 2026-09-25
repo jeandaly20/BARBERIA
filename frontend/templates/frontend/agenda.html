@@ -1,0 +1,141 @@
+{% extends "frontend/base.html" %}
+{% load static %}
+{% block title %}Agenda — Jean Barber Atelier{% endblock %}
+
+{% block header %}
+<header class="fixed top-0 inset-x-0 z-50 bg-surface/85 backdrop-blur-xl pt-safe shadow-[0_1px_8px_rgba(0,0,0,0.3)]">
+  <div class="h-16 px-margin flex items-center justify-between">
+    <div class="flex items-center gap-space-sm">
+      <img alt="Jean Barber Atelier" class="h-8 w-auto object-contain" src="{% static 'frontend/img/logo.svg' %}"/>
+      <div class="flex flex-col">
+        <span class="font-headline-sm text-headline-sm text-primary tracking-tight leading-none">Jean Barber Atelier</span>
+        <span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Agenda</span>
+      </div>
+    </div>
+    <a href="{% url 'frontend:perfil' %}" class="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
+      <span class="material-symbols-outlined text-on-primary text-[18px]">person</span>
+    </a>
+  </div>
+</header>
+{% endblock %}
+
+{% block main_extra_classes %} pt-16 pb-24{% endblock %}
+
+{% block content %}
+<div class="flex flex-col w-full px-margin pb-32 space-y-space-lg">
+  <!-- Selector de Semana -->
+  <section class="flex flex-col space-y-space-sm pt-space-xs">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center space-x-space-xs">
+        <span class="material-symbols-outlined text-primary text-[20px]">calendar_today</span>
+        <span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Semana Actual</span>
+      </div>
+      <div class="flex items-center space-x-1">
+        <button aria-label="Semana anterior" class="w-8 h-8 rounded-lg bg-surface-container-high text-on-surface flex items-center justify-center active:scale-95 transition-transform" id="prev-week-btn">
+          <span class="material-symbols-outlined text-[18px]">chevron_left</span>
+        </button>
+        <button aria-label="Semana siguiente" class="w-8 h-8 rounded-lg bg-surface-container-high text-on-surface flex items-center justify-center active:scale-95 transition-transform" id="next-week-btn">
+          <span class="material-symbols-outlined text-[18px]">chevron_right</span>
+        </button>
+      </div>
+    </div>
+    <div class="flex items-baseline justify-between">
+      <h2 class="font-headline-md text-headline-md text-on-surface font-semibold" id="week-range-label">—</h2>
+    </div>
+    <div class="flex space-x-space-xs overflow-x-auto py-1 -mx-margin px-margin scrollbar-none snap-x" id="day-chips"></div>
+  </section>
+
+  <!-- Banner día cerrado -->
+  <div class="hidden flex items-center space-x-space-sm bg-surface-container-high p-space-md rounded-xl shadow-sm" id="rest-day-banner">
+    <div class="w-10 h-10 rounded-full bg-error-container/40 flex items-center justify-center flex-shrink-0">
+      <span class="material-symbols-outlined text-error text-[22px]">event_busy</span>
+    </div>
+    <div class="flex flex-col">
+      <span class="font-label-lg text-label-lg text-on-surface font-semibold">Martes: Día de Descanso</span>
+      <span class="font-body-sm text-body-sm text-on-surface-variant">Jean Atelier permanece cerrado por mantenimiento y descanso semanal. Selecciona otro día.</span>
+    </div>
+  </div>
+
+  <!-- Horarios -->
+  <div class="flex flex-col space-y-space-lg" id="schedule-container">
+    <section class="flex flex-col space-y-space-sm">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center space-x-space-xs text-on-surface">
+          <span class="material-symbols-outlined text-primary text-[18px]">wb_twilight</span>
+          <span class="font-headline-sm text-headline-sm">Turnos Mañana</span>
+        </div>
+      </div>
+      <div class="grid grid-cols-3 gap-space-xs" id="slots-manana"></div>
+    </section>
+
+    <div class="flex items-center justify-between px-space-md py-3 rounded-xl bg-surface-container-low text-on-surface-variant">
+      <div class="flex items-center space-x-space-sm">
+        <span class="material-symbols-outlined text-secondary text-[20px]">restaurant</span>
+        <div class="flex flex-col">
+          <span class="font-label-md text-label-md text-on-surface font-semibold">12:30 PM — 1:30 PM</span>
+          <span class="font-body-sm text-body-sm text-on-surface-variant">Horario de Almuerzo (No disponible)</span>
+        </div>
+      </div>
+      <span class="font-label-sm text-label-sm bg-surface-container-high px-2 py-0.5 rounded text-on-surface-variant uppercase tracking-wider">Receso</span>
+    </div>
+
+    <section class="flex flex-col space-y-space-sm">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center space-x-space-xs text-on-surface">
+          <span class="material-symbols-outlined text-secondary-container text-[18px]">wb_sunny</span>
+          <span class="font-headline-sm text-headline-sm">Turnos Tarde</span>
+        </div>
+        <span class="font-label-sm text-label-sm text-on-surface-variant">Hasta 7:00 PM</span>
+      </div>
+      <div class="grid grid-cols-3 gap-space-xs" id="slots-tarde"></div>
+    </section>
+  </div>
+
+  <!-- Políticas -->
+  <section class="rounded-xl bg-surface-container p-space-md shadow-md space-y-space-sm relative overflow-hidden">
+    <div class="flex items-center space-x-space-xs text-primary">
+      <span class="material-symbols-outlined text-[20px]">timer</span>
+      <h3 class="font-headline-sm text-headline-sm text-on-surface">Puntualidad &amp; Políticas</h3>
+    </div>
+    <div class="space-y-space-xs">
+      <div class="flex items-start space-x-2">
+        <span class="material-symbols-outlined text-primary text-[16px] mt-0.5 flex-shrink-0">check_circle</span>
+        <p class="font-body-md text-body-md text-on-surface">
+          <strong class="font-semibold text-primary">Llegar 10 min antes</strong> de la hora acordada para acondicionar tu cabello y barba.
+        </p>
+      </div>
+      <div class="flex items-start space-x-2">
+        <span class="material-symbols-outlined text-error text-[16px] mt-0.5 flex-shrink-0">warning</span>
+        <p class="font-body-md text-body-md text-on-surface-variant">
+          <strong class="font-semibold text-error">Tolerancia máxima de 15 min.</strong> Pasado ese tiempo el turno se cancela automáticamente y se pierde el anticipo sin excepción.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Dock inferior -->
+  <div class="fixed bottom-20 inset-x-0 z-40 bg-surface-container-high/95 backdrop-blur-xl px-margin py-3.5 shadow-[0_-8px_24px_rgba(0,0,0,0.6)]">
+    <div class="flex items-center justify-between mb-2.5">
+      <div class="flex flex-col">
+        <span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wide">Tu Turno</span>
+        <div class="flex items-center space-x-1.5">
+          <span class="material-symbols-outlined text-primary text-[16px]">event_available</span>
+          <span class="font-label-lg text-label-lg text-on-surface font-semibold truncate" id="appointment-summary">Elegí día y hora</span>
+        </div>
+      </div>
+    </div>
+    <button class="w-full h-[52px] rounded-xl bg-primary-container text-on-primary-container font-label-lg text-label-lg font-bold flex items-center justify-center space-x-space-xs shadow-[0_4px_20px_rgba(245,158,11,0.35)] active:scale-[0.98] transition-transform disabled:opacity-40" id="book-btn" disabled>
+      <span>Continuar al pago</span>
+      <span class="material-symbols-outlined text-[20px]">arrow_forward</span>
+    </button>
+  </div>
+</div>
+{% endblock %}
+
+{% block bottom_nav %}
+{% include "frontend/_bottom_nav.html" with active_tab="agenda" %}
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{% static 'frontend/js/agenda.js' %}"></script>
+{% endblock %}

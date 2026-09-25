@@ -1,0 +1,220 @@
+{% extends "frontend/base.html" %}
+{% load static %}
+{% block title %}Iniciar sesión — Jean Barber Atelier{% endblock %}
+
+{% block extra_head %}
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+{% endblock %}
+
+{% block content %}
+<div class="flex flex-col w-full px-margin pb-space-xl">
+  <!-- Ambient Brand Aura & Logo Header -->
+  <header class="flex flex-col items-center text-center pt-space-md pb-space-md relative">
+    <div class="absolute w-44 h-44 rounded-full bg-primary/10 blur-3xl pointer-events-none -top-4"></div>
+    <div class="relative w-28 h-28 rounded-full bg-surface-container-high flex items-center justify-center p-2 mb-space-sm shadow-xl">
+      <div class="absolute inset-0 rounded-full bg-gradient-to-tr from-primary-container/20 to-transparent"></div>
+      <img alt="Jean Barber Atelier Logo" class="w-full h-full object-contain relative z-10 drop-shadow-md rounded-full" src="{% static 'frontend/img/logo.svg' %}"/>
+    </div>
+    <div class="flex items-center gap-1.5 mb-1">
+      <span class="w-1.5 h-1.5 rounded-full bg-primary-container"></span>
+      <span class="font-label-sm text-label-sm uppercase tracking-widest text-primary">Haute Barberie</span>
+      <span class="w-1.5 h-1.5 rounded-full bg-primary-container"></span>
+    </div>
+    <p class="font-headline-md text-headline-md text-on-surface font-semibold tracking-tight">Jean Barber Atelier</p>
+    <p class="font-body-sm text-body-sm text-on-surface-variant max-w-[290px] mt-1 mb-space-sm">
+      Cortes de precisión y estilo exclusivo. Agenda tu cita en segundos.
+    </p>
+    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-surface-container-high shadow-sm">
+      <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+      <span class="font-label-md text-label-md text-on-surface">Lun - Dom (Mar descanso) • 9:30 AM - 7:00 PM</span>
+    </div>
+  </header>
+
+  <!-- Mensaje de error -->
+  <div class="hidden mb-space-sm px-4 py-3 rounded-lg bg-error-container text-on-error-container font-body-sm text-body-sm" id="authError"></div>
+
+  <!-- Segmented Auth Mode Switcher -->
+  <section aria-label="Selector de acceso" class="w-full mt-space-xs mb-space-md">
+    <div class="w-full p-1 rounded-xl bg-surface-container-lowest flex items-center shadow-inner" id="authSegment">
+      <button class="flex-1 py-2.5 rounded-lg font-label-lg text-label-lg text-on-primary bg-primary shadow-sm transition-all duration-200 text-center" id="tabLogin" onclick="switchAuthTab('login')" type="button">
+        Iniciar Sesión
+      </button>
+      <button class="flex-1 py-2.5 rounded-lg font-label-lg text-label-lg text-on-surface-variant bg-transparent transition-all duration-200 text-center hover:text-on-surface" id="tabRegister" onclick="switchAuthTab('register')" type="button">
+        Crear Cuenta
+      </button>
+    </div>
+  </section>
+
+  <!-- Auth Form Container -->
+  <main class="w-full bg-surface-container rounded-xl p-space-md shadow-xl flex flex-col gap-space-sm">
+    <form class="flex flex-col gap-space-sm" id="authForm">
+      <!-- Nombre (solo registro) -->
+      <div class="flex-col gap-1 hidden" id="nombreField">
+        <label class="font-label-sm text-label-sm uppercase tracking-wider text-outline" for="nombreInput">Nombre</label>
+        <div class="h-[52px] bg-surface-container-high rounded-lg px-3.5 flex items-center gap-3 focus-within:bg-surface-bright transition-colors shadow-inner">
+          <span class="material-symbols-outlined text-outline text-[20px]">badge</span>
+          <input class="w-full bg-transparent font-body-md text-body-md text-on-surface placeholder:text-outline/70 focus:outline-none" id="nombreInput" placeholder="Tu nombre" type="text"/>
+        </div>
+      </div>
+
+      <!-- Input: Email -->
+      <div class="flex flex-col gap-1">
+        <label class="font-label-sm text-label-sm uppercase tracking-wider text-outline" for="emailInput">
+          Correo Electrónico
+        </label>
+        <div class="h-[52px] bg-surface-container-high rounded-lg px-3.5 flex items-center gap-3 focus-within:bg-surface-bright transition-colors shadow-inner">
+          <span class="material-symbols-outlined text-outline text-[20px]">mail</span>
+          <input class="w-full bg-transparent font-body-md text-body-md text-on-surface placeholder:text-outline/70 focus:outline-none" id="emailInput" placeholder="tu@correo.com" required="" type="email"/>
+        </div>
+      </div>
+
+      <!-- Input: WhatsApp (solo registro) -->
+      <div class="flex-col gap-1 hidden" id="phoneField">
+        <div class="flex items-center justify-between">
+          <label class="font-label-sm text-label-sm uppercase tracking-wider text-outline" for="phoneInput">
+            WhatsApp o Móvil
+          </label>
+          <span class="font-label-sm text-label-sm text-primary flex items-center gap-1">
+            <span class="material-symbols-outlined text-[12px]">notifications_active</span>
+            Aviso 10m antes
+          </span>
+        </div>
+        <div class="h-[52px] bg-surface-container-high rounded-lg px-3.5 flex items-center gap-3 focus-within:bg-surface-bright transition-colors shadow-inner">
+          <span class="material-symbols-outlined text-outline text-[20px]">chat</span>
+          <input class="w-full bg-transparent font-body-md text-body-md text-on-surface placeholder:text-outline/70 focus:outline-none" id="phoneInput" placeholder="099 123 4567" type="tel"/>
+        </div>
+      </div>
+
+      <!-- Input: Password -->
+      <div class="flex flex-col gap-1">
+        <div class="flex items-center justify-between">
+          <label class="font-label-sm text-label-sm uppercase tracking-wider text-outline" for="passInput">
+            Contraseña
+          </label>
+          <button class="font-label-sm text-label-sm text-primary hover:underline" id="btnOlvideClave" type="button">
+            ¿Olvidaste tu clave?
+          </button>
+        </div>
+        <div class="h-[52px] bg-surface-container-high rounded-lg px-3.5 flex items-center gap-3 focus-within:bg-surface-bright transition-colors shadow-inner">
+          <span class="material-symbols-outlined text-outline text-[20px]">lock</span>
+          <input class="w-full bg-transparent font-body-md text-body-md text-on-surface placeholder:text-outline/70 focus:outline-none" id="passInput" placeholder="••••••••" required="" type="password"/>
+          <button class="text-outline hover:text-on-surface flex items-center" onclick="togglePassVisibility()" type="button">
+            <span class="material-symbols-outlined text-[20px]" id="passToggleIcon">visibility_off</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Remember Me Row -->
+      <div class="flex items-center justify-between pt-1">
+        <label class="flex items-center gap-2 cursor-pointer select-none">
+          <input checked="" class="w-4 h-4 rounded bg-surface-container-high text-primary-container focus:ring-0 focus:ring-offset-0 border-0" type="checkbox"/>
+          <span class="font-body-sm text-body-sm text-on-surface-variant">Recordarme</span>
+        </label>
+      </div>
+
+      <!-- Primary Action CTA -->
+      <button class="w-full h-[52px] rounded-lg bg-primary text-on-primary font-label-lg text-label-lg uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg active:scale-[0.98] transition-transform mt-space-xs font-semibold" type="submit" id="authSubmitBtn">
+        <span class="material-symbols-outlined text-[20px]">content_cut</span>
+        <span id="submitBtnLabel">Ingresar y Agendar Cita</span>
+      </button>
+    </form>
+
+    <!-- Recuperar contraseña (oculto por defecto) -->
+    <form class="hidden flex-col gap-space-sm" id="recoverForm">
+      <div class="flex items-center justify-between">
+        <p class="font-headline-sm text-headline-sm text-on-surface">Recuperar contraseña</p>
+        <button class="font-label-sm text-label-sm text-primary hover:underline" id="btnVolverLogin" type="button">
+          Volver
+        </button>
+      </div>
+
+      <div class="hidden mb-1 px-4 py-3 rounded-lg bg-primary/10 text-primary font-body-sm text-body-sm" id="recoverInfo"></div>
+      <div class="hidden mb-1 px-4 py-3 rounded-lg bg-error-container text-on-error-container font-body-sm text-body-sm" id="recoverError"></div>
+
+      <!-- Paso 1: pedir el código -->
+      <div class="flex flex-col gap-1" id="recoverPaso1">
+        <label class="font-label-sm text-label-sm uppercase tracking-wider text-outline" for="recoverEmailInput">
+          Correo Electrónico
+        </label>
+        <div class="h-[52px] bg-surface-container-high rounded-lg px-3.5 flex items-center gap-3 focus-within:bg-surface-bright transition-colors shadow-inner">
+          <span class="material-symbols-outlined text-outline text-[20px]">mail</span>
+          <input class="w-full bg-transparent font-body-md text-body-md text-on-surface placeholder:text-outline/70 focus:outline-none" id="recoverEmailInput" placeholder="tu@correo.com" type="email"/>
+        </div>
+        <button class="w-full h-[48px] mt-space-xs rounded-lg bg-primary text-on-primary font-label-lg text-label-lg font-semibold" id="btnEnviarCodigo" type="button">
+          Enviar código
+        </button>
+      </div>
+
+      <!-- Paso 2: código + nueva contraseña -->
+      <div class="hidden flex-col gap-space-sm" id="recoverPaso2">
+        <div class="flex flex-col gap-1">
+          <label class="font-label-sm text-label-sm uppercase tracking-wider text-outline" for="recoverCodigoInput">
+            Código (6 dígitos)
+          </label>
+          <div class="h-[52px] bg-surface-container-high rounded-lg px-3.5 flex items-center gap-3 focus-within:bg-surface-bright transition-colors shadow-inner">
+            <span class="material-symbols-outlined text-outline text-[20px]">pin</span>
+            <input class="w-full bg-transparent font-body-md text-body-md text-on-surface placeholder:text-outline/70 focus:outline-none tracking-[0.3em]" id="recoverCodigoInput" inputmode="numeric" maxlength="6" placeholder="000000" type="text"/>
+          </div>
+        </div>
+        <div class="flex flex-col gap-1">
+          <label class="font-label-sm text-label-sm uppercase tracking-wider text-outline" for="recoverNuevaPassInput">
+            Nueva contraseña
+          </label>
+          <div class="h-[52px] bg-surface-container-high rounded-lg px-3.5 flex items-center gap-3 focus-within:bg-surface-bright transition-colors shadow-inner">
+            <span class="material-symbols-outlined text-outline text-[20px]">lock_reset</span>
+            <input class="w-full bg-transparent font-body-md text-body-md text-on-surface placeholder:text-outline/70 focus:outline-none" id="recoverNuevaPassInput" placeholder="••••••••" type="password"/>
+          </div>
+        </div>
+        <button class="w-full h-[48px] rounded-lg bg-primary text-on-primary font-label-lg text-label-lg font-semibold" id="btnCambiarClave" type="button">
+          Cambiar contraseña
+        </button>
+      </div>
+    </form>
+  </main>
+
+  {% if google_client_id %}
+  <!-- Google Sign-In -->
+  <section class="w-full mt-space-sm" id="googleSection">
+    <div class="relative flex items-center justify-center my-1">
+      <div class="w-full h-px bg-surface-container-high"></div>
+      <span class="absolute px-3 font-label-sm text-label-sm text-outline uppercase bg-surface tracking-wider">o ingresa con</span>
+    </div>
+    <div class="w-full flex justify-center mt-space-sm" id="googleButtonContainer"></div>
+  </section>
+  {% endif %}
+
+  <!-- Guest Exploration Banner -->
+  <section class="mt-space-sm mb-space-sm flex flex-col gap-2">
+    <a href="{% url 'frontend:servicios' %}" class="w-full py-3 rounded-lg bg-surface-container-low text-on-surface flex items-center justify-center gap-2 hover:bg-surface-container-high transition-colors">
+      <span class="material-symbols-outlined text-[18px] text-primary">storefront</span>
+      <span class="font-label-md text-label-md">Continuar como invitado a ver cortes y precios</span>
+      <span class="material-symbols-outlined text-[16px] text-outline">arrow_forward</span>
+    </a>
+  </section>
+
+  <!-- Key Value Badges -->
+  <section aria-label="Políticas del Atelier" class="w-full bg-surface-container-lowest rounded-xl p-space-sm flex flex-col gap-2 mb-space-sm shadow-sm">
+    <div class="flex items-center gap-2.5 px-1">
+      <span class="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+        <span class="material-symbols-outlined text-primary text-[15px]">verified_user</span>
+      </span>
+      <p class="font-body-sm text-body-sm text-on-surface-variant leading-tight">
+        <strong class="text-on-surface font-semibold">Anticipo Seguro:</strong> Reserva con el 50% o liquida tu servicio completo.
+      </p>
+    </div>
+    <div class="flex items-center gap-2.5 px-1">
+      <span class="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+        <span class="material-symbols-outlined text-primary text-[15px]">timer</span>
+      </span>
+      <p class="font-body-sm text-body-sm text-on-surface-variant leading-tight">
+        <strong class="text-on-surface font-semibold">Puntualidad:</strong> 10 min de recordatorio vía email • 15 min de tolerancia máxima.
+      </p>
+    </div>
+  </section>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>window.GOOGLE_CLIENT_ID = "{{ google_client_id|default:'' }}";</script>
+<script src="{% static 'frontend/js/login.js' %}"></script>
+{% endblock %}

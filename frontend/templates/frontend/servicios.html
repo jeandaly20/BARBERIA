@@ -1,0 +1,139 @@
+{% extends "frontend/base.html" %}
+{% load static %}
+{% block title %}Servicios — Jean Barber Atelier{% endblock %}
+
+{% block header %}
+<header class="fixed top-0 inset-x-0 z-50 bg-surface-container-low/90 backdrop-blur-xl shadow-[0_4px_20px_rgba(0,0,0,0.35)] pt-safe">
+  <div class="h-20 px-margin flex items-center justify-between gap-space-sm">
+    <div class="flex items-center gap-space-sm min-w-0 flex-1">
+      <img alt="Jean Barber Atelier" class="h-8 w-auto object-contain shrink-0" src="{% static 'frontend/img/logo.svg' %}"/>
+      <div class="flex flex-col min-w-0">
+        <span class="font-headline-sm text-headline-sm text-on-surface tracking-tight truncate">Jean Barber Atelier</span>
+        <div class="flex items-center gap-1.5 mt-0.5">
+          <span class="w-1.5 h-1.5 rounded-full bg-primary-container animate-pulse"></span>
+          <span class="font-label-sm text-label-sm text-primary tracking-wide uppercase truncate">Abierto hoy 9:30 AM - 7:00 PM</span>
+        </div>
+      </div>
+    </div>
+    <a href="{% url 'frontend:perfil' %}" class="w-8 h-8 rounded-full bg-primary flex items-center justify-center shrink-0">
+      <span class="material-symbols-outlined text-on-primary text-[18px]">person</span>
+    </a>
+  </div>
+</header>
+{% endblock %}
+
+{% block main_extra_classes %} pt-20 pb-24{% endblock %}
+
+{% block content %}
+<div class="flex flex-col w-full text-on-surface">
+  <div class="relative px-margin pt-4 pb-36 space-y-5 max-w-md mx-auto w-full">
+    <div class="flex items-center justify-between py-1 border-b border-surface-variant/40">
+      <div class="flex items-center gap-2">
+        <span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+        <span class="font-label-md text-label-md text-primary tracking-wide uppercase font-semibold">Atelier Abierto • Hoy 9:30 - 19:00</span>
+      </div>
+      <span class="font-label-sm text-label-sm text-on-surface-variant flex items-center gap-1">
+        <span class="material-symbols-outlined text-[15px] text-secondary">lock_clock</span>Turno garantizado
+      </span>
+    </div>
+
+    <div class="space-y-1">
+      <span class="font-label-sm text-label-sm text-secondary tracking-widest uppercase font-semibold">Paso 1 de 3</span>
+      <h1 class="font-headline-lg text-headline-lg text-on-surface tracking-tight">Elige tu Servicio</h1>
+      <p class="font-body-sm text-body-sm text-on-surface-variant">Selecciona el estilo que deseas para tu cita de hoy.</p>
+    </div>
+
+    <!-- Servicios (se cargan desde la API; este bloque es el estado inicial/plantilla) -->
+    <div class="space-y-3" id="service-options">
+      <p class="font-body-sm text-body-sm text-on-surface-variant" id="services-loading">Cargando servicios…</p>
+    </div>
+
+    <!-- Complementos -->
+    <div class="rounded-xl bg-surface-container-low border border-surface-variant/40 overflow-hidden shadow-md">
+      <button class="w-full p-4 flex items-center justify-between text-left hover:bg-surface-container/50 transition-colors" id="addons-toggle" type="button">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-lg bg-primary-container/20 flex items-center justify-center shrink-0 text-primary">
+            <span class="material-symbols-outlined text-[18px]">tune</span>
+          </div>
+          <div>
+            <span class="font-label-lg text-label-lg text-on-surface font-semibold block">Complementos opcionales</span>
+            <span class="font-body-sm text-body-sm text-on-surface-variant" id="addons-count-label">Personaliza tu turno (0 seleccionados)</span>
+          </div>
+        </div>
+        <span class="material-symbols-outlined text-primary text-[22px] transition-transform duration-200 transform" id="addons-chevron">expand_more</span>
+      </button>
+      <div class="px-4 pb-4 pt-1 space-y-2.5 border-t border-surface-variant/30" id="addons-list">
+        <p class="font-body-sm text-body-sm text-on-surface-variant">Cargando complementos…</p>
+      </div>
+    </div>
+
+    <!-- Desglose -->
+    <div class="rounded-xl bg-surface-container p-4 space-y-3 shadow-md border border-surface-variant/30">
+      <div class="flex items-center justify-between">
+        <h4 class="font-label-md text-label-md uppercase tracking-wider text-secondary font-semibold">Desglose Transparente</h4>
+        <span class="font-label-sm text-[11px] text-on-surface-variant flex items-center gap-1">
+          <span class="material-symbols-outlined text-[13px] text-primary">verified_user</span>Sin cobros sorpresa
+        </span>
+      </div>
+      <div class="space-y-1.5 text-body-sm text-body-sm font-label-md">
+        <div class="flex justify-between text-on-surface-variant">
+          <span id="detail-service-name">—</span>
+          <span class="text-on-surface font-medium" id="detail-service-price">$0.00</span>
+        </div>
+        <div class="flex justify-between text-on-surface-variant hidden" id="detail-addons-row">
+          <span id="detail-addons-label">Complementos</span>
+          <span class="text-on-surface font-medium" id="detail-addons-price">$0.00</span>
+        </div>
+        <div class="flex justify-between text-on-surface-variant">
+          <span>Cuota exclusiva de reserva</span>
+          <span class="text-on-surface font-medium">+$1.00</span>
+        </div>
+        <div class="pt-2 border-t border-surface-variant/40 flex justify-between items-baseline">
+          <span class="font-semibold text-on-surface">Total del Servicio</span>
+          <span class="font-headline-sm text-headline-sm text-primary font-bold" id="detail-total-price">$0.00</span>
+        </div>
+      </div>
+      <div class="grid grid-cols-2 gap-2 pt-1">
+        <div class="p-2.5 rounded-lg bg-surface-container-high border border-primary/20 space-y-0.5">
+          <div class="text-[10px] uppercase font-label-sm tracking-wider text-primary font-bold">Pagas Hoy Online (50%)</div>
+          <div class="font-headline-sm text-headline-sm text-primary font-bold" id="detail-online-deposit">$0.00</div>
+          <div class="text-[10px] text-on-surface-variant">Asegura tu silla</div>
+        </div>
+        <div class="p-2.5 rounded-lg bg-surface-container-high border border-surface-variant/40 space-y-0.5">
+          <div class="text-[10px] uppercase font-label-sm tracking-wider text-on-surface-variant font-semibold">Pagas en el Local</div>
+          <div class="font-headline-sm text-headline-sm text-on-surface font-bold" id="detail-in-person">$0.00</div>
+          <div class="text-[10px] text-on-surface-variant">Efectivo o transferencia</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dock inferior -->
+  <div class="fixed bottom-16 inset-x-0 z-40 bg-surface-container-low/95 backdrop-blur-xl p-3 px-margin shadow-[0_-8px_30px_rgba(0,0,0,0.6)] border-t border-surface-variant/30">
+    <div class="max-w-md mx-auto space-y-2">
+      <div class="flex items-center justify-between text-on-surface">
+        <div class="min-w-0 flex-1 pr-2">
+          <div class="font-label-md text-label-md font-semibold text-on-surface truncate" id="dock-service-name">Elegí un servicio</div>
+          <div class="font-label-sm text-[11px] text-on-surface-variant">Total: <strong class="text-on-surface" id="dock-total-cost">$0.00</strong> • Saldo en silla: <span id="dock-balance">$0.00</span></div>
+        </div>
+        <div class="text-right shrink-0">
+          <span class="font-label-sm text-[10px] uppercase tracking-wider text-secondary font-bold block">Anticipo Hoy (50%)</span>
+          <span class="font-headline-sm text-headline-sm text-primary font-bold leading-none" id="dock-deposit-amount">$0.00</span>
+        </div>
+      </div>
+      <button class="w-full h-12 rounded-lg bg-primary-container hover:bg-secondary-container active:scale-[0.99] text-on-primary-container font-label-lg text-label-lg font-bold shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer" id="btn-continue-booking" type="button">
+        <span>Continuar a Fecha y Hora</span>
+        <span class="material-symbols-outlined text-[20px]">arrow_forward</span>
+      </button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block bottom_nav %}
+{% include "frontend/_bottom_nav.html" with active_tab="servicios" %}
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{% static 'frontend/js/servicios.js' %}"></script>
+{% endblock %}
