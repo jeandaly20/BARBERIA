@@ -3,7 +3,6 @@ const HORA_APERTURA_MIN = 9 * 60 + 30;
 const HORA_CIERRE_MIN = 19 * 60;
 const ALMUERZO_INICIO_MIN = 12 * 60 + 30;
 const ALMUERZO_FIN_MIN = 13 * 60 + 30;
-const INTERVALO_MIN = 15;
 
 const seleccion = JSON.parse(sessionStorage.getItem("reserva_seleccion") || "null");
 if (!seleccion) {
@@ -110,6 +109,21 @@ function renderWeekChips() {
   });
 }
 
+// Genera los mismos horarios candidatos que citas/disponibilidad.py::calcular_slots: un solo
+// recorrido continuo desde la apertura, avanzando de a "duracionTotalMin" (la duración real del
+// servicio+extras elegidos) en vez de una grilla fija de 15 min — así los horarios que se
+// muestran son exactamente los mismos que evalúa el backend (y no parecen turnos de 15 min).
+function generarCandidatos() {
+  const candidatos = [];
+  for (let min = HORA_APERTURA_MIN; min + duracionTotalMin <= HORA_CIERRE_MIN; min += duracionTotalMin) {
+    const finCandidato = min + duracionTotalMin;
+    const solapaAlmuerzo = min < ALMUERZO_FIN_MIN && ALMUERZO_INICIO_MIN < finCandidato;
+    if (solapaAlmuerzo) continue;
+    candidatos.push(min);
+  }
+  return candidatos;
+}
+
 async function cargarDisponibilidad() {
   const params = new URLSearchParams({ fecha: fechaSeleccionada, servicio: seleccion.servicio_id });
   if (seleccion.extra_ids.length) params.set("extras", seleccion.extra_ids.join(","));
@@ -123,21 +137,29 @@ async function cargarDisponibilidad() {
   }
   const data = await resp.json();
   const disponibles = new Set(data.horarios_disponibles.map((h) => h.slice(0, 5)));
+  const candidatos = generarCandidatos();
 
-  renderSlots("slots-manana", HORA_APERTURA_MIN, ALMUERZO_INICIO_MIN, disponibles);
-  renderSlots("slots-tarde", ALMUERZO_FIN_MIN, HORA_CIERRE_MIN, disponibles);
+  renderSlots(
+    "slots-manana",
+    candidatos.filter((min) => min < ALMUERZO_INICIO_MIN),
+    disponibles
+  );
+  renderSlots(
+    "slots-tarde",
+    candidatos.filter((min) => min >= ALMUERZO_FIN_MIN),
+    disponibles
+  );
   actualizarResumenTurno();
 }
 
-function renderSlots(containerId, desdeMin, hastaMin, disponibles) {
+function renderSlots(containerId, minutos, disponibles) {
   const container = document.getElementById(containerId);
-  const slots = [];
-  for (let min = desdeMin; min + duracionTotalMin <= hastaMin; min += INTERVALO_MIN) {
+  const slots = minutos.map((min) => {
     const hh = String(Math.floor(min / 60)).padStart(2, "0");
     const mm = String(min % 60).padStart(2, "0");
     const hora24 = `${hh}:${mm}`;
-    slots.push({ hora24, disponible: disponibles.has(hora24) });
-  }
+    return { hora24, disponible: disponibles.has(hora24) };
+  });
 
   container.innerHTML = slots
     .map((s) => {

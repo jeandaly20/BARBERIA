@@ -1,6 +1,8 @@
 from datetime import date, datetime, time, timedelta
+from datetime import timezone as dt_timezone
 
 from django.test import SimpleTestCase
+from django.utils import timezone
 
 from citas.disponibilidad import calcular_slots
 
@@ -76,3 +78,40 @@ class CalcularSlotsTests(SimpleTestCase):
         slots_largos = calcular_slots(lunes, duracion_minutos=90, citas_existentes=[])
 
         self.assertGreater(len(slots_cortos), len(slots_largos))
+
+    def test_ahora_aware_utc_excluye_horarios_pasados_sin_romper(self):
+        """Las vistas pasan `timezone.now()` (aware, en UTC), pero acá todo es hora local
+        naive (America/Guayaquil). Antes del fix esto o bien tiraba TypeError (naive vs aware)
+        o, según la hora del día, ni siquiera entraba a filtrar lo pasado porque la fecha en
+        UTC ya era otro día — y entonces mostraba horarios de la tarde que ya habían pasado."""
+        lunes = _proximo_dia_semana(0)
+        ahora_local = datetime.combine(lunes, time(14, 0))  # 2:00 PM hora local
+        ahora_aware = timezone.make_aware(ahora_local)
+
+        slots = calcular_slots(lunes, duracion_minutos=40, citas_existentes=[], ahora=ahora_aware)
+
+        self.assertNotIn(time(9, 30), slots)  # ya pasó
+        self.assertIn(time(14, 10), slots)  # todavía no llega
+
+    def test_ahora_aware_con_corrimiento_de_fecha_en_utc(self):
+        lunes = _proximo_dia_semana(0)
+        # 8:00 PM hora local (UTC-5) cae ya en la madrugada del día siguiente en UTC.
+        ahora_local = datetime.combine(lunes, time(20, 0))
+        ahora_aware = timezone.make_aware(ahora_local).astimezone(dt_timezone.utc)
+        self.assertNotEqual(ahora_aware.date(), lunes)  # confirma que sí hay corrimiento
+
+        slots = calcular_slots(lunes, duracion_minutos=40, citas_existentes=[], ahora=ahora_aware)
+
+        self.assertEqual(slots, [])  # a las 8pm el local ya cerró (19:00)
+
+    def test_los_horarios_se_espacian_segun_la_duracion_no_cada_15_min(self):
+        """Antes el paso entre turnos era fijo (15 min) sin importar cuánto durara el corte,
+        lo que hacía parecer que un corte de 40 min se podía agendar cada 15 min. Ahora el
+        paso entre turnos ofrecidos es la propia duración del servicio."""
+        lunes = _proximo_dia_semana(0)
+        slots = calcular_slots(lunes, duracion_minutos=40, citas_existentes=[])
+
+        self.assertIn(time(9, 30), slots)
+        self.assertNotIn(time(9, 45), slots)
+        self.assertNotIn(time(10, 0), slots)
+        self.assertIn(time(10, 10), slots)  # 9:30 + 40 min

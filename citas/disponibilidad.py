@@ -6,14 +6,9 @@ la lógica de negocio (martes cerrado, almuerzo, solapamientos, etc.) sin tocar 
 """
 from datetime import date, datetime, time, timedelta
 
-from core.utils import (
-    ALMUERZO_FIN,
-    ALMUERZO_INICIO,
-    DIA_CERRADO,
-    HORA_APERTURA,
-    HORA_CIERRE,
-    INTERVALO_SLOT_MINUTOS,
-)
+from django.utils import timezone
+
+from core.utils import ALMUERZO_FIN, ALMUERZO_INICIO, DIA_CERRADO, HORA_APERTURA, HORA_CIERRE
 
 
 def _a_datetime(fecha: date, hora: time) -> datetime:
@@ -38,7 +33,15 @@ def calcular_slots(
     if fecha.weekday() == DIA_CERRADO:
         return []
 
-    ahora = ahora or datetime.now()
+    if ahora is None:
+        ahora = datetime.now()
+    elif timezone.is_aware(ahora):
+        # `timezone.now()` (lo que pasan las vistas) viene en UTC; acá todo lo demás es hora
+        # local naive (America/Guayaquil), así que hay que convertir antes de comparar — si no,
+        # en ciertos horarios del día "ahora.date()" cae en el día siguiente (UTC ya cambió de
+        # fecha aunque localmente siga siendo hoy) y el filtro de "ya pasó" se salta entero.
+        ahora = timezone.localtime(ahora).replace(tzinfo=None)
+
     if fecha < ahora.date():
         return []
 
@@ -54,7 +57,10 @@ def calcular_slots(
 
     slots = []
     candidato = _a_datetime(fecha, HORA_APERTURA)
-    paso = timedelta(minutes=INTERVALO_SLOT_MINUTOS)
+    # El paso entre turnos ofrecidos es la propia duración del servicio (+extras): así se
+    # ofrecen bloques consecutivos de verdad (ej. cada 40 min) en vez de cada 15 min fijos,
+    # que hacía parecer que el corte dura 15 minutos cuando en realidad ocupa mucho más.
+    paso = duracion
 
     while candidato + duracion <= cierre_dt:
         fin_candidato = candidato + duracion

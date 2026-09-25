@@ -9,8 +9,6 @@ HORA_CIERRE = time(19, 0)
 ALMUERZO_INICIO = time(12, 30)
 ALMUERZO_FIN = time(13, 30)
 
-INTERVALO_SLOT_MINUTOS = 15
-
 TARIFA_RESERVA = 1  # dólares que se suman al total por agendar online
 
 GRACIA_NO_SHOW_MINUTOS = 15
