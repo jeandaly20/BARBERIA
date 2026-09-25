@@ -136,6 +136,11 @@ EMAIL_PORT = config("EMAIL_PORT", default=587, cast=int)
 EMAIL_HOST_USER = config("EMAIL_HOST_USER", default="")
 EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD", default="")
 EMAIL_USE_TLS = config("EMAIL_USE_TLS", default=True, cast=bool)
+# Sin esto, si el proveedor de hosting filtra el puerto SMTP saliente, la conexión se queda
+# colgada indefinidamente en vez de fallar — y como el email se envía antes de responder al
+# cliente, toda la petición de "confirmar pago" se traba (fail_silently no ayuda: no hay
+# excepción que atrapar, solo un socket que nunca conecta ni corta).
+EMAIL_TIMEOUT = config("EMAIL_TIMEOUT", default=10, cast=int)
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 # Correo del dueño de la barbería al que llegan los avisos de nuevas citas y el resumen diario.
